@@ -45,7 +45,6 @@ class checkmk::agent::ssh(
   user {$user:
     ensure     => present,
     system     => true,
-    groups     => $user,
     shell      => '/bin/sh',
     managehome => true,
     home       => '/var/lib/check_mk_agent',
