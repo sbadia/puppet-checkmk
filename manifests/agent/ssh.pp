@@ -26,7 +26,7 @@
 #   require exported resources correctly configured.
 #   default: false
 #
-class checkmk::agent::xinetd(
+class checkmk::agent::ssh(
   $server      = '/usr/bin/check_mk_agent',
   $only_from   = ['127.0.0.1'],
   $user        = 'check_mk_agent',
