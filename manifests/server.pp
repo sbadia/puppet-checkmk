@@ -14,9 +14,18 @@ class checkmk::server(
   $auto_add = false,
 ) {
 
-  package { 'check-mk-server':
+  package {['check-mk-server','check-mk-multisite',
+  'check-mk-livestatus','nagios3-core','pnp4nagios',
+  'monitoring-plugins']:
     ensure => installed,
   }
+
+  # https://www.mail-archive.com/checkmk-en%40lists.mathias-kettner.de/msg09056.html
+  #
+  # sudo /etc/init.d/nagios3 stop
+  # sudo dpkg-statoverride --update --add nagios www-data 2710 /var/lib/nagios3/rw
+  # sudo dpkg-statoverride --update --add nagios nagios 751 /var/lib/nagios3
+  # sudo /etc/init.d/nagios3 start
 
   checkmk::check{['apt','puppet']:}
 
