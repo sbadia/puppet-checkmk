@@ -1,0 +1,6 @@
+#!/bin/bash
+
+if [ -f /proc/sys/net/ipv4/netfilter/ip_conntrack_max ]; then
+	echo "<<<conntrack>>>"
+	sysctl net.ipv4.netfilter.ip_conntrack_max net.ipv4.netfilter.ip_conntrack_count
+fi

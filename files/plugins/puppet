@@ -1,0 +1,53 @@
+#!/usr/bin/ruby -w
+
+require 'yaml'
+
+# regex to find pid in output of above.
+pcommand = 'ruby(1.8)? (/usr/sbin/puppetd|/usr/bin/puppet agent)'
+pyaml = "/var/lib/puppet/state/last_run_summary.yaml"
+
+def command?(command)
+  system("which #{command} > /dev/null 2>&1")
+end
+
+# check if process is running
+def running(process)
+  pattern = /^\s*(\d+)/
+  IO.popen("ps ax | egrep '#{process}'"){ |f|
+    return $1.to_s if f.gets =~ pattern
+  }
+  return false
+end
+
+def read_yaml(yaml)
+  if File.readable?("#{yaml}")
+    parsed = begin
+      YAML.load(File.open("#{yaml}"))
+    rescue ArgumentError => e
+      puts "Could not parse YAML: #{e.message}"
+      false
+    end
+    return parsed
+  end
+  false
+end
+
+# is puppet PATH?
+exit unless command?("puppet")
+
+# let's do this!
+puts '<<<puppet>>>'
+puts Time.now.to_i
+# Was puppet running?
+my_pid = running(pcommand)
+puts "pid\t#{my_pid}"
+
+last_run_summary = read_yaml(pyaml)
+if last_run_summary.class == Hash
+  # Dump all data and let check_mk sort it out.
+  last_run_summary.each_pair { |section, values|
+    values.each_pair { |key, value|
+      puts "#{section}_#{key}\t#{value}"
+    }
+  }
+end
