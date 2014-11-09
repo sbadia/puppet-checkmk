@@ -1,0 +1,123 @@
+#!/usr/bin/python
+# -*- encoding: utf-8; py-indent-offset: 4 -*-
+
+puppet_last_run_default_values = (30, 60)
+puppet_exec_time_default_values = (300, 600)
+puppet_resources_default_values = (1, 2)
+
+
+def inventory_puppet(checkname, info):
+    inventory = []
+    for line in info:
+        if checkname == "puppet.last_run" and line[0] == "time_last_run":
+            inventory += [('last run', "", "puppet_last_run_default_values")]
+        if checkname == "puppet.exec_time" and line[0] == "time_total":
+            inventory += [('execution time', "",
+                           "puppet_exec_time_default_values")]
+        if checkname == "puppet.resources" and line[0] == "resources_changed":
+            inventory += [('resources', "", "puppet_resources_default_values")]
+    return inventory
+
+
+# the check function (dummy)
+def check_puppet(item, params, info):
+    warn, crit = params
+
+    this_time = int(info[0][0])
+    perfdata = []
+
+    if item == "last run":
+        for line in info:
+            if line[0] == "pid" and line[1]:
+                pid = line[1]
+            elif line[0] == "time_last_run" and line[1].isdigit:
+                last_run = (this_time - int(line[1])) / 60
+                perfdata = [("last_run", last_run, "min", warn, crit)]
+
+        if last_run > crit:
+            return (2,
+                    "CRITICAL - Agent has not run in %d min (more than %d min)"
+                    % (last_run, crit), perfdata)
+        elif last_run > warn:
+            return (1,
+                    "WARNING - Agent has not run in %d min (more than %d min)"
+                    % (last_run, warn), perfdata)
+        else:
+            return (0, "OK - Agent last run %dM ago" % last_run, perfdata)
+
+    elif item == "execution time":
+        time_total = -1
+        for line in info:
+            if line[0] == "pid" and line[1]:
+                pid = line[1]
+            elif line[0] == "time_total" and line[1].isdigit:
+                time_total = float(line[1])
+
+            if line[0] == "time_total" and line[1].isdigit:
+                perfdata += [(line[0], float(line[1]), "sec", warn, crit)]
+            elif line[0].startswith("time_") and line[1].isdigit:
+                perfdata += [(line[0], float(line[1]), "sec")]
+
+        if time_total < 0:
+            return (2, "CRITICAL - Agent exec error", perfdata)
+        elif time_total > crit:
+            return (2, "CRITICAL - Agent exec time %f seconds (more than %f)"
+                    % (time_total, crit), perfdata)
+        elif time_total > warn:
+            return (1,
+                    "WARNING - Agent exec time %f seconds (more than %f)"
+                    % (time_total, warn), perfdata)
+        else:
+            return (0,
+                    "OK - Agent exec time %d seconds"
+                    % time_total, perfdata)
+
+    elif item == "resources":
+        resources_failed = -1
+        resources_failed_to_restart = -1
+        resources_out_of_sync = -1
+        for line in info:
+            if line[0] == "pid" and line[1]:
+                pid = line[1]
+            elif line[0] == "resources_changed" and line[1].isdigit:
+                resources_changed = int(line[1])
+            elif line[0] == "resources_failed" and line[1].isdigit:
+                resources_failed = int(line[1])
+            elif line[0] == "resources_failed_to_restart" and line[1].isdigit:
+                resources_failed_to_restart = int(line[1])
+            elif line[0] == "resources_out_of_sync" and line[1].isdigit:
+                resources_out_of_sync = int(line[1])
+            elif line[0] == "resources_skipped" and line[1].isdigit:
+                resources_skipped = int(line[1])
+
+            if line[0] == "resources_changed" and line[1].isdigit:
+                perfdata += [(line[0], int(line[1]), "", warn, crit)]
+            elif line[0].startswith("resources_") and line[1].isdigit:
+                perfdata += [(line[0], int(line[1]), "")]
+
+        failed = resources_failed + resources_failed_to_restart
+        # resources_out_of_sync #commented by sileht because out-of-syn means
+        # they are ressources to apply in other machines (exported ressources)
+
+        if resources_failed < 0:
+            return (2, "CRITICAL - Agent exec error", perfdata)
+        elif failed > crit:
+            return (2,
+                    "CRITICAL - %d resources failed to apply"
+                    % (failed), perfdata)
+        elif failed > warn:
+            return (1,
+                    "WARNING - %d resources failed to apply"
+                    % (failed), perfdata)
+        elif pid.isdigit:
+            return (0,
+                    "OK - %d changed, %d skipped, %d out of sync"
+                    % (resources_changed, resources_skipped, resources_out_of_sync),
+                    perfdata)
+
+    return (3, "Unknown - No info from puppet (%s)" % item)
+
+# declare the check to Check_MK
+check_info['puppet.last_run'] = (check_puppet, "Puppet", 1, inventory_puppet)
+check_info['puppet.exec_time'] = (check_puppet, "Puppet", 1, inventory_puppet)
+check_info['puppet.resources'] = (check_puppet, "Puppet", 1, inventory_puppet)
