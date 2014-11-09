@@ -43,13 +43,14 @@ class checkmk::agent::ssh(
   $check_only_from = join($only_from, ',')
 
   user {$user:
-    ensure  => present,
-    system  => true,
-    groups  => $user,
-    shell   => '/bin/sh',
-    home    => '/var/lib/check_mk_agent',
-    comment => 'Check_mk Agent',
-    require => Package['check-mk-agent'],
+    ensure     => present,
+    system     => true,
+    groups     => $user,
+    shell      => '/bin/sh',
+    managehome => true,
+    home       => '/var/lib/check_mk_agent',
+    comment    => 'Check_mk Agent',
+    require    => Package['check-mk-agent'],
   }
 
   sudo::conf {$user:
@@ -60,7 +61,7 @@ class checkmk::agent::ssh(
   file {
     '/var/lib/check_mk_agent/.ssh':
       ensure  => directory,
-      require => Package['check-mk-agent'];
+      require => User[$user];
     '/var/lib/check_mk_agent/.ssh/authorized_keys':
       ensure  => present,
       owner   => $user,
