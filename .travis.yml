@@ -1,4 +1,5 @@
 language: ruby
+cache: bundler
 bundler_args: --without development
 script: "bundle exec rake SPEC_OPTS='--format n --color --backtrace'"
 rvm:
