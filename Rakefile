@@ -9,6 +9,10 @@ require 'puppet-lint/tasks/puppet-lint'
 
 PuppetLint.configuration.send('disable_80chars')
 
+exclude_tests_paths = ['pkg/**/*','vendor/**/*','spec/**/*']
+PuppetLint.configuration.ignore_paths = exclude_tests_paths
+PuppetSyntax.exclude_paths = exclude_tests_paths
+
 def get_version
   if File.read(File.join(TDIR, 'metadata.json')) =~ /(\d+)\.(\d+)\.(\d+)/
     return [$1.to_i, $2.to_i, $3.to_i].compact.join('.')
