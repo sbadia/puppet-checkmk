@@ -102,4 +102,4 @@ task :metadata do
 end
 
 task(:default).clear
-task :default => [:spec, :lint, :syntax, :metadata]
+task :default => [:spec, :syntax, :metadata]
