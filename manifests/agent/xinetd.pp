@@ -24,6 +24,10 @@
 #   (optional) Protocol for xinetd checkmk service
 #   default: 'tcp'
 #
+# [*flags*]
+#   (optional) Flags for xinetd checkmk service
+#   default: undef
+#
 # [*auto_add*]
 #   (optional) Register a exported exec resources to automatically
 #   refresh server configuration when a client is added. This functionality
@@ -36,6 +40,7 @@ class checkmk::agent::xinetd(
   $port      = '6556',
   $user      = 'root',
   $protocol  = 'tcp',
+  $flags     = undef,
   $auto_add  = false,
 ) {
 
@@ -46,6 +51,7 @@ class checkmk::agent::xinetd(
   validate_re($port, '^\d+$', 'port is not a valid port')
   validate_string($user)
   validate_string($protocol)
+  validate_string($flags)
 
   $check_only_from = join($only_from, ' ')
 
@@ -77,5 +83,4 @@ class checkmk::agent::xinetd(
   if $auto_add {
     include 'checkmk::client'
   }
-
 }
