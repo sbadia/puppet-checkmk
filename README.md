@@ -6,6 +6,9 @@
 
 ## Overview
 
+Puppet [checkmk](http://mathias-kettner.com/check_mk.html) module.
+
+This module is completely inspired by the work of [Mehdi Abaakouk (sileht)](https://github.com/sileht) for [Tetaneutral.net](http://tetaneutral.net/), please see [the original work](https://chiliproject.tetaneutral.net/projects/git-tetaneutral-net/repository/puppet-checkmk).
 
 ## Usage
 
