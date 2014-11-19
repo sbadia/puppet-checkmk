@@ -1,2 +1,6 @@
+## 2014-11-20 - 0.0.2
+* Added flags option to xinetd config
+  (for example to allow xinetd to listen on IPv6 only)
+  please see `man xinetd.conf` for details. Thanks sileht!
 ## 2014-11-09 - 0.0.1
 * Initial release

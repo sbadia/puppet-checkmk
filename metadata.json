@@ -1,7 +1,7 @@
 {
   "name": "sbadia-checkmk",
-  "version": "0.0.1",
-  "author": "Sebastien Badia",
+  "version": "0.0.2",
+  "author": "Mehdi Abaakouk, Sebastien Badia",
   "summary": "Puppet checkmk module",
   "license": "GPLv3",
   "source": "git://github.com/sbadia/puppet-checkmk.git",
