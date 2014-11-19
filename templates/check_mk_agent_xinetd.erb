@@ -45,5 +45,8 @@ service check_mk
 	# the default options will be used for this service.
 	log_on_success =
 
-	disable        = no
+    disable        = no
+<% if !@flags.nil? and !@flags.empty? -%>
+    flags          = <%= @flags %>
+<% end -%>
 }
