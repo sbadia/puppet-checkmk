@@ -1,0 +1,146 @@
+#!/usr/bin/python
+# -*- encoding: utf-8; py-indent-offset: 4 -*-
+# +------------------------------------------------------------------+
+# |             ____ _               _        __  __ _  __           |
+# |            / ___| |__   ___  ___| | __   |  \/  | |/ /           |
+# |           | |   | '_ \ / _ \/ __| |/ /   | |\/| | ' /            |
+# |           | |___| | | |  __/ (__|   <    | |  | | . \            |
+# |            \____|_| |_|\___|\___|_|\_\___|_|  |_|_|\_\           |
+# |                                                                  |
+# | Copyright Mathias Kettner 2012             mk@mathias-kettner.de |
+# +------------------------------------------------------------------+
+#
+# This file is part of Check_MK.
+# The official homepage is at http://mathias-kettner.de/check_mk.
+#
+# check_mk is free software;  you can redistribute it and/or modify it
+# under the  terms of the  GNU General Public License  as published by
+# the Free Software Foundation in version 2.  check_mk is  distributed
+# in the hope that it will be useful, but WITHOUT ANY WARRANTY;  with-
+# out even the implied warranty of  MERCHANTABILITY  or  FITNESS FOR A
+# PARTICULAR PURPOSE. See the  GNU General Public License for more de-
+# ails.  You should have  received  a copy of the  GNU  General Public
+# License along with GNU Make; see the file  COPYING.  If  not,  write
+# to the Free Software Foundation, Inc., 51 Franklin St,  Fifth Floor,
+# Boston, MA 02110-1301 USA.
+
+# Author: Mehdi Abaakouk <sileht@sileht.net>
+
+# EXAMPLE DATA:
+# <<<bird>>>
+# 0 0 0 4 device1  Device   master   up     2012-07-10 13:19:48
+# 2 0 2 4 static_bgp Static   master   up     2012-07-10 13:19:48
+# 2 0 2 4 static1  Static   master   up     2012-07-10 13:19:48
+# 0 418823 0 4 kernel1  Kernel   master   up     2012-07-10 13:19:48
+# 418672 2 375660 4 GIXE     BGP      master   up     2012-08-10 10:35:21  Established
+# 0 0 0 4 LIAZO    BGP      master   start  2012-07-10 13:19:48  Connect       Socket: No route to host
+# 42998 1 1771 4 ABSOLIGHT BGP      master   up     2012-08-21 19:53:12  Established
+# 46 1 45 4 FR_IX_RS1 BGP      master   up     2012-07-10 13:19:58  Established
+# 46 1 0 4 FR_IX_RS2 BGP      master   up     2012-07-10 13:19:57  Established
+# 229 418720 103 4 TETANEUTRAL BGP      master   up     2012-08-30 06:17:32  Established
+# 4792 1 3274 4 FRANCE_IX_RS1 BGP      master   up     2012-08-28 15:44:38  Established
+# 4790 1 0 4 FRANCE_IX_RS2 BGP      master   up     2012-08-28 15:44:41  Established
+# 0 1 0 4 EQUINIX_IX_COLLECTOR BGP      master   up     2012-07-23 04:10:34  Established
+# 6307 1 2164 4 EQUINIX_IX_RS1 BGP      master   up     2012-07-23 04:10:34  Established
+# 6091 1 0 4 EQUINIX_IX_RS2 BGP      master   up     2012-07-23 02:34:18  Established
+# 1 1 0 4 AFNIC_1  BGP      master   up     2012-08-28 15:48:32  Established
+# 3 1 0 4 AFNIC_2  BGP      master   up     2012-08-28 15:44:36  Established
+# 3 1 3 4 AFNIC_EQUINIX BGP      master   up     2012-07-23 02:34:22  Established
+# 2 1 2 4 SIS_EQUINIX BGP      master   up     2012-07-23 04:10:35  Established
+# 199 1 199 4 TELECITY_FRANCE_IX BGP      master   up     2012-08-28 15:45:53  Established
+# 2 1 2 4 AMAZON_EQUINIX_IX BGP      master   up     2012-07-23 04:10:54  Established
+# 2 1 2 4 AMAZON_FRANCE_IX BGP      master   up     2012-08-28 15:46:43  Established
+# 417872 1 53 4 GITOYEN  BGP      master   up     2012-08-17 15:37:51  Established
+# 6 1 6 4 LUXTELECOM_EQUINIX_IX BGP      master   up     2012-07-30 12:42:11  Established
+# 18 1 18 4 FB1_EQUINIX_IX BGP      master   up     2012-08-21 19:53:24  Established
+# 18 1 0 4 FB2_EQUINIX_IX BGP      master   up     2012-08-21 19:53:29  Established
+# 61 1 61 4 OVH_EQUINIX_IX BGP      master   up     2012-08-27 19:00:44  Established
+# 256 1 256 4 PORTLANE_EQUINIX_IX BGP      master   up     2012-08-22 08:01:51  Established
+# 0 0 0 6 device1  Device   master   up     2012-07-10 13:19:48
+# 2 0 2 6 static_bgp Static   master   up     2012-07-10 13:19:48
+# 5 0 5 6 static1  Static   master   up     2012-07-10 13:19:48
+# 0 10138 0 6 kernel1  Kernel   master   up     2012-07-10 13:19:48
+# 8 1 0 6 FR_IX_6_RS1 BGP      master   up     2012-07-10 13:20:02  Established
+# 8 1 0 6 FR_IX_6_RS2 BGP      master   up     2012-07-10 13:20:02  Established
+# 289 9853 285 6 TETANEUTRAL_6 BGP      master   up     2012-08-30 06:17:30  Established
+# 937 1 0 6 FRANCE_IX_6_RS1 BGP      master   up     2012-08-28 15:46:00  Established
+# 936 1 1 6 FRANCE_IX_6_RS2 BGP      master   up     2012-08-28 15:45:56  Established
+#
+
+bird_inventory_protos = None # None == All protocols
+bird_inventory_states = None # None == All states
+bird_inventory_monitor_state = True
+
+# two date format: 2012-08-28 15:45:56 or Aug08
+date_and_desc_match = re.compile("(?P<date>((|\d\d\d\d-\d\d-\d\d\s)(|\d\d:)\d\d:\d\d|\w\w\w\d\d))($|\s+(?P<desc>.*))")
+
+def _line_to_dict(line):
+    fields = ( 'imported', 'exported', 'preferred', 'ipvers', 'proto_name', 'protocol', 'table', 'state' )
+    nf = len(fields)
+
+    data_dict = dict(zip(fields, line[:nf]))
+    data_dict.update({"desc": "", "date": ""})
+
+    line_end = " ".join(line[nf:])
+    date_and_desc_dict = date_and_desc_match.match(line_end)
+    if date_and_desc_dict:
+        data_dict.update(date_and_desc_dict.groupdict())
+    return data_dict
+
+def _filter_info(data_dict):
+    if (bird_inventory_protos is None or data_dict["protocol"] in bird_inventory_protos) and \
+        (bird_inventory_states is None or data_dict["state"] in bird_inventory_states):
+            return True
+    return False
+
+def inventory_bird(info):
+    inventory = []
+    know_session = []
+    for line in info:
+        data_dict = _line_to_dict(line)
+        if _filter_info(data_dict):
+            initial_data = dict((k,v) for k,v in data_dict.iteritems() if k in [ "state" ])
+            inventory.append(("%(protocol)s%(ipvers)s_%(proto_name)s" % data_dict , None, initial_data ))
+        know_session.append("%(protocol)s%(ipvers)s_%(proto_name)s" % data_dict)
+    inventory.append(("Bird session discovery", "", know_session))
+    return inventory
+
+def check_bird(item, params, info):
+    if item == "Bird session discovery":
+        info = [ "%(protocol)s%(ipvers)s_%(proto_name)s" % _line_to_dict(line) for line in info ]
+        session_discoverys = [ l for l in info if l not in params ]
+        if session_discoverys:
+            return (1, "WARN - new session%s dicovered: %s" % ( (len(session_discoverys) != 1 and "s" or ""), ",".join(session_discoverys)))
+        return (0, "No new session")
+    else:
+        current_protocol = None
+        for line in info:
+            data_dict = _line_to_dict(line)
+
+            if item == "%(protocol)s%(ipvers)s_%(proto_name)s" % data_dict:
+                perfdata = [
+                    ( "imported", data_dict["imported"]),
+                    ( "exported", data_dict["exported"]),
+                    ( "preferred", data_dict["preferred"]),
+                ]
+
+                if not bird_inventory_monitor_state:
+                    if data_dict["state"] == "up":
+                        ret = 0
+                    else:
+                        ret = 2
+                else:
+                    if data_dict["state"] == params["state"]:
+                        ret = 0
+                    elif data_dict["state"] == "up" and params["state"] != "up":
+                        ret = 1
+                        data_dict["state"] += " (expected state: %(state)s)" % params
+                    else:
+                        ret = 2
+                        data_dict["state"] += " (expected state: %(state)s)" % params
+
+                return (ret, "%(state)s - %(imported)s/%(preferred)s routes imported/preferred, info: %(desc)s" % data_dict, perfdata)
+
+        return (3, "UNKNOWN - protocol %s not found in agent output for disk" % item)
+
+check_info['bird'] = (check_bird, "%s", 1, inventory_bird)
