@@ -11,6 +11,7 @@ class checkmk::agent {
   checkmk::plugin{
     ['puppet','conntrack','apt',
       'smart','dmraid','mk_mysql',
-      'mk_postgres','lnx_psperf']:
+      'mk_postgres','lnx_psperf',
+      'bird']:
   }
 }
