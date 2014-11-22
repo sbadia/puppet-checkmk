@@ -7,7 +7,8 @@ else
 end
 
 gem 'rake', '10.1.0'
-gem 'puppet-lint'
+gem 'puppet-lint', '~> 1.1'
+gem 'puppet-lint-param-docs'
 gem 'rspec-puppet'
 gem 'puppet-syntax'
 gem 'puppet', puppetversion
