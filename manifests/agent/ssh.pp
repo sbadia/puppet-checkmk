@@ -34,7 +34,7 @@ class checkmk::agent::ssh(
   $auto_add    = false,
 ) {
 
-  include 'checkmk::agent'
+  include '::checkmk::agent'
 
   validate_absolute_path($server)
   validate_string($user)
@@ -62,7 +62,6 @@ class checkmk::agent::ssh(
       ensure  => directory,
       require => User[$user];
     '/var/lib/check_mk_agent/.ssh/authorized_keys':
-      ensure  => present,
       owner   => $user,
       group   => $user,
       mode    => '0700',
@@ -71,7 +70,7 @@ class checkmk::agent::ssh(
   }
 
   if $auto_add {
-    include 'checkmk::client'
+    include '::checkmk::client'
   }
 
 }

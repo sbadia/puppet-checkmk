@@ -44,7 +44,7 @@ class checkmk::agent::xinetd(
   $auto_add  = false,
 ) {
 
-  include 'checkmk::agent'
+  include '::checkmk::agent'
 
   validate_absolute_path($server)
   validate_array($only_from)
@@ -81,6 +81,6 @@ class checkmk::agent::xinetd(
   }
 
   if $auto_add {
-    include 'checkmk::client'
+    include '::checkmk::client'
   }
 }

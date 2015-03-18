@@ -10,7 +10,6 @@ define checkmk::check() {
   }
 
   file { "${path}/${name}":
-    ensure  => present,
     owner   => root,
     group   => root,
     mode    => '0755',
