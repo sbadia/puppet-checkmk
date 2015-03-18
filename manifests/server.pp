@@ -14,9 +14,14 @@ class checkmk::server(
   $auto_add = false,
 ) {
 
+  include ::checkmk::params
+
   package {['check-mk-server','check-mk-multisite',
-  'check-mk-livestatus','nagios3-core','pnp4nagios',
-  'monitoring-plugins']:
+  'check-mk-livestatus','nagios3-core','pnp4nagios']:
+    ensure => installed,
+  }
+
+  package { $::checkmk::params::monitoring_packages:
     ensure => installed,
   }
 
