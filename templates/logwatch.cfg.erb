@@ -36,7 +36,7 @@
 # The first match decided. Lines that do not match any pattern
 # are ignored
  I nagircbot
- I nagios nagios3.*SERVICE ALERT.*;LOG .*
+ I nagios.*SERVICE ALERT.*;LOG .*
  C Fail event detected on md device
  I mdadm.*: Rebuild.*event detected
  W mdadm\[
@@ -55,7 +55,7 @@
  I puppet-agent.*logwatch.cfg
  I puppetmaster.*logwatch.cfg
  I nagircbot
- I nagios nagios3.*SERVICE ALERT.*;LOG .*
+ I nagios.*SERVICE ALERT.*;LOG .*
  I i915.*registered panic notifier
  I drm.*registered panic notifier
  I spf: lookup failed: panic:
@@ -63,6 +63,7 @@
  C iscsid: .*failed.*
  C panic
  C Oops
+ W blocked for more than .* seconds
  W Killed process
  W generic protection rip
  W .*Unrecovered read error - auto reallocate failed
