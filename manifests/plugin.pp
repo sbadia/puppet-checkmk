@@ -1,5 +1,9 @@
 # Install a checkmk plugin
 #
+# [*seconds*]
+#   Configure a specific timing for a checkmk check.
+#   Defaults to false
+#
 define checkmk::plugin(
   $seconds = false,
 ) {
