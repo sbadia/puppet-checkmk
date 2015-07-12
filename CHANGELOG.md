@@ -1,3 +1,7 @@
+## 2015-07-12 - 1.0.0
+* Added bird plugin
+* server: Fix monitoring plugins package name on Ubuntu
+* Added spec test and acceptance
 ## 2014-11-20 - 0.0.2
 * Added flags option to xinetd config
   (for example to allow xinetd to listen on IPv6 only)
