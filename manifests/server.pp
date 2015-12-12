@@ -32,7 +32,10 @@ class checkmk::server(
   # sudo dpkg-statoverride --update --add nagios nagios 751 /var/lib/nagios3
   # sudo /etc/init.d/nagios3 start
 
-  checkmk::check{['apt','bird','puppet']:}
+  checkmk::check{['apt','bird','puppet','apache_status',
+  'check_dns','check_mail','check_smtp','logins',
+  'nginx_status']:}
+
 
   if $auto_add {
     # this exec statement will cause check_mk to regenerate

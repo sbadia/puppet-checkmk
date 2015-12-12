@@ -12,6 +12,10 @@ class checkmk::agent {
     ['puppet','conntrack','apt',
       'smart','dmraid','mk_mysql',
       'mk_postgres','lnx_psperf',
-      'bird']:
+      'bird','apache_status','lnx_quota',
+      'dnsclient','mailman_lists','mk_inventory.linux',
+      'netstat.linux','mk_logins','nginx_status']:
   }
+
+
 }

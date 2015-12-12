@@ -1,0 +1,101 @@
+#!/usr/bin/python
+# -*- encoding: utf-8; py-indent-offset: 4 -*-
+# +------------------------------------------------------------------+
+# |             ____ _               _        __  __ _  __           |
+# |            / ___| |__   ___  ___| | __   |  \/  | |/ /           |
+# |           | |   | '_ \ / _ \/ __| |/ /   | |\/| | ' /            |
+# |           | |___| | | |  __/ (__|   <    | |  | | . \            |
+# |            \____|_| |_|\___|\___|_|\_\___|_|  |_|_|\_\           |
+# |                                                                  |
+# | Copyright Mathias Kettner 2014             mk@mathias-kettner.de |
+# +------------------------------------------------------------------+
+#
+# This file is part of Check_MK.
+# The official homepage is at http://mathias-kettner.de/check_mk.
+#
+# check_mk is free software;  you can redistribute it and/or modify it
+# under the  terms of the  GNU General Public License  as published by
+# the Free Software Foundation in version 2.  check_mk is  distributed
+# in the hope that it will be useful, but WITHOUT ANY WARRANTY;  with-
+# out even the implied warranty of  MERCHANTABILITY  or  FITNESS FOR A
+# PARTICULAR PURPOSE. See the  GNU General Public License for more de-
+# ails.  You should have  received  a copy of the  GNU  General Public
+# License along with GNU Make; see the file  COPYING.  If  not,  write
+# to the Free Software Foundation, Inc., 51 Franklin St,  Fifth Floor,
+# Boston, MA 02110-1301 USA.
+
+# <<<lnx_thermal>>>
+# thermal_zone0 enabled acpitz 57000 127000 critical
+# thermal_zone1 enabled acpitz 65000 100000 critical 95500 passive
+
+# <<<lnx_thermal>>>
+# thermal_zone0 enabled acpitz 47000 90000 critical 79000 passive
+
+# <<<lnx_thermal>>>
+# thermal_zone0 enabled acpitz 38000 98000 critical
+# thermal_zone1 pkg-temp-0  44000 0 passive 0 passive
+
+factory_settings["lnx_thermal_default_levels"] = {
+    "levels"                    : (70, 80),
+    "device_levels_handling"    : "devdefault",
+}
+
+def inventory_lnx_thermal(info):
+    return [ (l[0].replace('thermal_zone', 'Zone '), {}) for l in info ]
+
+
+def check_lnx_thermal(item, params, info):
+    for line in info:
+        if line[0].replace('thermal_zone', 'Zone ') == item:
+            # ['thermal_zone0', 'enabled', 'acpitz', '51000', '90000', 'critical', '79000', 'passive']
+            state = 0
+            tp_reached = []
+
+            # Some devices report an empty value for the 3rd field (type). Trying to fix those lines.
+            # -> thermal_zone1 pkg-temp-0  44000 0 passive 0 passive
+            try:
+                int(line[2])
+                int(line[3])
+                line = line[:2] + [''] + line[2:]
+            except:
+                pass # -> regular line
+
+            # convert values from millidegree
+            temp = int(line[3]) / 1000.0
+
+            # parse trip points
+            dev_warn = None
+            dev_crit = None
+            if len(line) > 4:
+                trip_points = dict(zip(line[5::2], map(lambda x: int(x) / 1000.0, line[4::2])))
+                for tp_num, (tp_name, level) in enumerate(trip_points.items()):
+                    # ignore active cooling device trip points (means enabling a fan or similar)
+                    if tp_name == 'active':
+                        continue
+                    if level != 0:
+                        if tp_name in [ 'hot', 'critical' ]:
+                            dev_crit = level
+                        else:
+                            dev_warn = level
+
+            # If only one relevant trip point is found, use that for both warn and crit
+            if (dev_warn != None) != (dev_crit != None):
+                dev_warn = dev_crit = max(dev_warn, dev_crit)
+
+            if dev_warn and dev_crit:
+                dev_levels = (dev_warn, dev_crit)
+            else:
+                dev_levels = None
+
+            return check_temperature(temp, params, dev_levels=dev_levels)
+
+
+check_info['lnx_thermal'] = {
+    "inventory_function"      : inventory_lnx_thermal,
+    "check_function"          : check_lnx_thermal,
+    "service_description"     : "Temperature %s",
+    "has_perfdata"            : True,
+    "group"                   : "temperature",
+    "default_levels_variable" : "lnx_thermal_default_levels",
+    "includes"                : [ "temperature.include" ],
+}
