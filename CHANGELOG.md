@@ -1,3 +1,5 @@
+## 2015-12-12 - 1.0.1
+* Added a lot of plugins and checks :)
 ## 2015-07-12 - 1.0.0
 * Added bird plugin
 * server: Fix monitoring plugins package name on Ubuntu
