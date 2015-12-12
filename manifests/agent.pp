@@ -14,7 +14,7 @@ class checkmk::agent {
       'mk_postgres','lnx_psperf',
       'bird','apache_status','lnx_quota',
       'dnsclient','mailman_lists','mk_inventory.linux',
-      'netstat.linux','mk_logins','nginx_status']:
+      'mk_logins','nginx_status']:
   }
 
 
