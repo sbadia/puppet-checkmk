@@ -1,3 +1,5 @@
+## 2015-12-13 - 1.0.3
+* Remove mk_logins plugin
 ## 2015-12-12 - 1.0.2
 * Added a lot of plugins and checks :)
 ## 2015-07-12 - 1.0.0
