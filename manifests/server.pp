@@ -17,7 +17,7 @@ class checkmk::server(
   include ::checkmk::params
 
   package {['check-mk-server','check-mk-multisite',
-  'check-mk-livestatus','nagios3-core','pnp4nagios']:
+  'check-mk-livestatus','nagios3-core']:
     ensure => installed,
   }
 
