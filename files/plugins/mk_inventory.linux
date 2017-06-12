@@ -92,8 +92,11 @@ then
     if type ip > /dev/null ; then
         echo "<<<lnx_ip_a:persist($UNTIL)>>>"
         ip a
-        echo "<<<lnx_ip_r:persist($UNTIL)>>>"
-        ip r
+        # A full-view generate a ±150Mo python hash :)
+        if ! type bird > /dev/null ; then
+          echo "<<<lnx_ip_r:persist($UNTIL)>>>"
+          ip r
+        fi
     fi
 
 fi
